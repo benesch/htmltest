@@ -12,8 +12,8 @@ func TestDocumentStoreDiscover(t *testing.T) {
 	dS.DocumentExtension = ".html" // Ignores .htm
 	dS.DirectoryIndex = "index.html"
 	dS.Discover()
-	// Fixtures dir has eight documents in various folders
-	assert.Equals(t, "document count", len(dS.Documents), 6)
+	// Fixtures dir has seven documents in various folders
+	assert.Equals(t, "document count", len(dS.Documents), 7)
 }
 
 func TestDocumentStoreIgnorePatterns(t *testing.T) {
@@ -25,7 +25,7 @@ func TestDocumentStoreIgnorePatterns(t *testing.T) {
 	dS.IgnorePatterns = []interface{}{"^lib/"}
 	dS.Discover()
 	// Fixtures dir has seven documents in various folders, (one ignored in lib)
-	assert.Equals(t, "document count", len(dS.Documents), 5)
+	assert.Equals(t, "document count", len(dS.Documents), 6)
 }
 
 func TestDocumentStoreDocumentExists(t *testing.T) {
@@ -43,6 +43,8 @@ func TestDocumentStoreDocumentExists(t *testing.T) {
 	assert.IsFalse(t, "foo.html does not exist", b3)
 	_, b4 := dS.DocumentPathMap["dir3/index.html"]
 	assert.IsFalse(t, "dir3/index.html does not exist", b4)
+	_, b5 := dS.DocumentPathMap["dir2/dirlink/index.html"]
+	assert.IsTrue(t, "dir2/dirlink/index.html exists", b5)
 }
 
 func TestDocumentStoreDocumentResolve(t *testing.T) {
@@ -72,6 +74,10 @@ func TestDocumentStoreDocumentResolve(t *testing.T) {
 	assert.IsTrue(t, "dir2/index.html exists", b4)
 	assert.Equals(t, "dir2/index.html resolves to correct document",
 		d4.FilePath, "fixtures/documents/dir2/index.html")
-	_, b5 := dS.ResolvePath("does-not-exist")
-	assert.IsFalse(t, "does not return doc for invalid path", b5)
+	d5, b5 := dS.ResolvePath("dir2/dirlink")
+	assert.IsTrue(t, "dir2/dirlink/index.html exists", b5)
+	assert.Equals(t, "dir2/dirlink/index.html resolves to correct document",
+		d5.FilePath, "fixtures/documents/dir2/dirlink/index.html")
+	_, b6 := dS.ResolvePath("does-not-exist")
+	assert.IsFalse(t, "does not return doc for invalid path", b6)
 }

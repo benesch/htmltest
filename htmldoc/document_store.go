@@ -74,6 +74,18 @@ func (dS *DocumentStore) discoverRecurse(dPath string) {
 		// Iterate over contents of directory
 		for _, fileinfo := range fis {
 			fPath := path.Join(dPath, fileinfo.Name())
+
+			// If we see a symlink, follow it.
+			if fileinfo.Mode()&os.ModeSymlink != 0 {
+				fileinfo, err = os.Stat(path.Join(dS.BasePath, fPath))
+				if os.IsNotExist(err) {
+					// Broken symlink. Ignore.
+					continue
+				} else if err != nil {
+					output.CheckErrorPanic(err)
+				}
+			}
+
 			if fileinfo.IsDir() {
 				// If item is a dir, we delve deeper
 				dS.discoverRecurse(fPath)
